@@ -1,11 +1,12 @@
-> {-# LANGUAGE DeriveDataTypeable #-}
+> {-# LANGUAGE DeriveDataTypeable, OverloadedStrings  #-}
         
 A module with Names and its functions
 =====================================
 
 > module Utils.Name where
 
-> import Data.Generics          
+> import Data.Generics
+> import Data.String    
 
 > import Utils.Pretty
   
@@ -31,3 +32,13 @@ Pretty printting
 >    pprint (Name s) = text s
 >    pprint (Gen s i) = text s <> int i
 >    pprint (Qual n s) = pprint n <> dot <> text s                   
+
+
+Overloaded Strings
+
+> instance IsString Name where
+>    fromString = Name
+
+> unName :: IsString a => Name -> a
+> unName (Name s) = fromString s
+> unName (Gen s n) = fromString (s ++ show n)     

@@ -119,8 +119,26 @@ Pretty printting instances
 >     pprint (EIf e e' e'') = lif <+> pprint e <+> lthen <+> pprint e'
 >                                 <+> lelse    <+> pprint e''
 >     pprint (EDo ss) = ldo <> nl <> nest 3 (pSemi ss)
->     pprint EFail = empty                  
+>     pprint EFail = empty
+
+> instance PPrint Pattern where
+>     pprint (PVar n) = pprint n
+>     pprint (PCon n ps) = parens (pprint n <+> hsep (map pprint ps))
+>     pprint (PLit l) = pprint l
+>     pprint PWild = text "_"
 
 > instance PPrint Stmt where
 >     pprint (Generator p e) = pprint p <+> rarrow <+> pprint e
 >     pprint (Qualifier e) = pprint e                         
+
+> instance PPrint Match where
+>     pprint (Match ps e) = hsep (map pprint ps) <+> eq <+> pprint e
+
+> instance PPrint BindGroup where
+>     pprint (BindGroup n ms t ws) = t' <> ms' <> ws'
+>                            where
+>                              n' = pprint n
+>                              ms' = punct nl $ map ((pprint n <+>) . pprint) ms
+>                              t' = maybe empty ((<> nl) . pprint) t
+>                              ws' = if null ws then empty
+>                                    else lwhere <+> nl <> nest 3 (pLines (concat ws))
