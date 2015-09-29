@@ -2,7 +2,7 @@ A type class for pretty printting stuff
 =======================
 
 > module Utils.Pretty (module Text.PrettyPrint.HughesPJ,
->                                 PPrint(..)) where
+>                      module Utils.Pretty) where
 
 > import Text.PrettyPrint.HughesPJ
 
@@ -10,13 +10,21 @@ A type class for pretty printting stuff
 > class PPrint a where
 >     pprint :: a -> Doc
 
+> pSpace :: PPrint a => [a] -> Doc
+> pSpace = foldr (\a ac -> pprint a <+> ac) empty        
 
 > pLines :: PPrint a => [a] -> Doc
 > pLines = punct nl
 
 > pSemi :: PPrint a => [a] -> Doc
-> pSemi = punct semi         
+> pSemi = punct (semi <> nl)         
 
+> pCommaNl :: PPrint a => [a] -> Doc
+> pCommaNl = punct (comma <> nl)
+
+> pComma :: PPrint a => [a] -> Doc
+> pComma = punct comma
+  
 > punct :: PPrint a => Doc -> [a] -> Doc
 > punct d = foldr (\a ac -> pprint a <> d <> ac) empty 
       
@@ -26,8 +34,8 @@ A type class for pretty printting stuff
 > slash :: Doc
 > slash = char '\\'         
 
-> arrow :: Doc
-> arrow = text "->"
+> larrow :: Doc
+> larrow = text "->"
 
 > rarrow :: Doc
 > rarrow = text "<-"          
@@ -60,4 +68,22 @@ A type class for pretty printting stuff
 > lthen = text "then"         
 
 > lelse :: Doc
-> lelse = text "else"         
+> lelse = text "else"
+
+> lwhere :: Doc
+> lwhere = text "where"          
+
+> ldata :: Doc
+> ldata = text "data"         
+
+> lclass :: Doc
+> lclass = text "class"
+
+> linst :: Doc
+> linst = text "instance"
+
+> linfix :: Doc
+> linfix = text "infix"
+
+> lbar :: Doc
+> lbar = text "|"        

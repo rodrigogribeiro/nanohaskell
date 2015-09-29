@@ -15,11 +15,15 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Lib
+  exposed-modules:       Syntax.NanoHaskell
+                       , Syntax.Type  
+                       , Utils.Name
+                       , Utils.Pretty
   build-depends:         base >= 4.7 && < 5
                        , pretty
                        , parsec
                        , mtl
+                       , syb
   default-language:    Haskell2010
 
 executable nanohaskell-exe
