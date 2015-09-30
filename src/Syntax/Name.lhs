@@ -3,14 +3,12 @@
 A module with Names and its functions
 =====================================
 
-> module Utils.Name where
+> module Syntax.Name where
 
 > import Control.Monad
   
 > import Data.Generics
 > import Data.String    
-
-> import Utils.Pretty
   
 A data type for names
 
@@ -27,14 +25,6 @@ Name generation
 
 > genNames :: [Name]
 > genNames = zipWith Gen letters [0..]            
-
-Pretty printting
-
-> instance PPrint Name where
->    pprint (Name s) = text s
->    pprint (Gen s i) = text s <> int i
->    pprint (Qual n s) = pprint n <> dot <> text s                   
-
 
 Overloaded Strings
 

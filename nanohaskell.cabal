@@ -15,9 +15,11 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:       Syntax.NanoHaskell
+  exposed-modules:
+                         Parser.NanoHaskellParser
+                       , Syntax.NanoHaskell
                        , Syntax.Type  
-                       , Utils.Name
+                       , Syntax.Name
                        , Utils.Pretty
   build-depends:         base >= 4.7 && < 5
                        , pretty
@@ -38,8 +40,12 @@ test-suite nanohaskell-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
-  build-depends:       base
+  build-depends:       base                    
                      , nanohaskell
+                     , parsec
+                     , HUnit
+                     , tasty
+                     , tasty-hunit
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   default-language:    Haskell2010
 
