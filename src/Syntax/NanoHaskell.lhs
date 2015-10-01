@@ -21,12 +21,15 @@ Literal syntax
 
 Expressions
 
+> data LocalBind = Local Name Expr
+>                  deriving (Eq, Ord, Show, Data, Typeable)
+
 > data Expr = EVar Name            
 >           | ECon Name            
 >           | ELit Literal         
 >           | ELam Name Expr
 >           | EApp Expr Expr
->           | ELet Name Expr Expr
+>           | ELet [LocalBind] Expr
 >           | EIf Expr Expr Expr
 >           | ECase Expr [Match]
 >           | EAnn Expr Type

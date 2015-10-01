@@ -24,6 +24,8 @@ A type class for pretty printting stuff
 >     pprint (LitFloat f) = float f
 >     pprint (LitString s) = doubleQuotes (text s)
 
+> instance PPrint LocalBind where
+>     pprint (Local n e) = pprint n <+> text "=" <+> pprint e
 
 > instance PPrint Expr where
 >     pprint (EVar n) = pprint n
@@ -31,8 +33,8 @@ A type class for pretty printting stuff
 >     pprint (ELit l) = pprint l
 >     pprint (ELam n e) = hcat [slash, pprint n, larrow, pprint e]
 >     pprint (EApp l r) = pprint l <+> pprint r
->     pprint (ELet n e e') = llet <> nl <> nest 3 (pprint n <> eq <> pprint e)
->                                 <> nl <> lin <> pprint e'
+>     pprint (ELet lb e') = llet <> nl <> nest 3 (pLines lb)
+>                                <> nl <> lin <> pprint e'
 >     pprint (ECase e ms) = lcase <+> pprint e <+> lof <> nl <> pLines ms
 >     pprint (EAnn e t) = pprint e <+> colon <+> pprint t
 >     pprint (EIf e e' e'') = lif <+> pprint e <+> lthen <+> pprint e'

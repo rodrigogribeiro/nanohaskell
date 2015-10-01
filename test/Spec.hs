@@ -1,8 +1,10 @@
+{-# LANGUAGE FlexibleContexts #-}
+import Data.Functor.Identity
 import Test.Tasty
 import Test.Tasty.HUnit
 import Text.Parsec
 
-    
+import Parser.LayoutCombinators
 import Parser.NanoHaskellParser
     
 import Syntax.NanoHaskell
@@ -34,6 +36,10 @@ parserPrettyTests = testGroup "Parser and Pretty Printer Tests"
 
 
 genSyntaxPrettyTest :: (Show a, Eq a, PPrint a) => a -> Parser a -> Assertion
-genSyntaxPrettyTest x px = case parse px "" (render $ pprint x) of
+genSyntaxPrettyTest x px = case doParse (render $ pprint x) px of
                                Left e -> undefined
                                Right x' -> x @=? x'
+
+
+doParse :: Stream String Identity a => String -> Parser a -> Either ParseError a
+doParse s p = runIndentParser "" p s           

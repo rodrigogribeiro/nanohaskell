@@ -34,3 +34,4 @@ Overloaded Strings
 > unName :: IsString a => Name -> a
 > unName (Name s) = fromString s
 > unName (Gen s n) = fromString (s ++ show n)     
+> unName (Qual n s) = fromString $ (unName n) ++ s
