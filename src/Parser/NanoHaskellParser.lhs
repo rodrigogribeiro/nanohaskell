@@ -13,15 +13,16 @@ Simple parser for NanoHaskell
 > import Text.Parsec.Indent
 > import Text.Parsec.Pos (SourcePos)    
 > import qualified Text.Parsec.Token as Tk
-  
+
+> import Parser.CoreParser
+    
 > import Syntax.Name
 > import Syntax.NanoHaskell
   
-A type for parsers
-   
-> type Parser a = ParsecT String () (State SourcePos) a
 
 
+Expressions
+  
 > exprP :: Parser Expr
 > exprP = chainl1 atomP (return EApp) 
 
@@ -55,21 +56,38 @@ A type for parsers
 >         f _ e _ e' _ e'' = EIf e e' e''
 
 > caseP :: Parser Expr          
-> caseP = undefined
+> caseP = f <$> reserved "case" <*> exprP <*> reserved "of" <*>
+>               block matchP
+>         where
+>           f _ e _ ms = ECase e ms
 
-> matchP :: String -> Parser Match
-> matchP sep = f <$> many1 patternP <*> symbol sep <*> exprP
->              where
->                f ps _ e = Match ps e
+> matchP :: Parser Match
+> matchP = f <$> many1 patternP <*> symbol "->" <*> exprP
+>          where
+>            f ps _ e = Match ps e
 
 > patternP :: Parser Pattern
-> patternP = undefined
-                             
-> annP = undefined
+> patternP = choice [ PWild <$ wildP
+>                   , PLit  <$> literalP
+>                   , pVarOrCon ]
+>            where
+>               wildP = symbol "_"
+>               pVarOrCon = (f . unName) <$> nameP <*>
+>                                            many patternP
+>               f xss@(x:xs) ps
+>                   | isUpper x = PCon (Name xss) ps
+>                   | otherwise = PVar (Name xss)
 
-> doP = undefined
-  
-> failP = undefined 
+> annP :: Parser Expr                                                  
+> annP = EAnn <$> exprP <* symbol "::" *> typeP
+
+> doP :: Parser Expr  
+> doP = EDo <$> (reserved "do" *> block stmtP)
+
+> failP :: Parser Expr  
+> failP = EFail <$ symbol "<<fail>>"
+
+> typeP = undefined
                  
 > varOrConP :: Parser Expr
 > varOrConP = (f . unName) <$> nameP
@@ -81,67 +99,13 @@ A type for parsers
 > literalP :: Parser Literal
 > literalP = choice [numberP , charP , stringP]
 
+Statements
+
+> stmtP :: Parser Stmt
+> stmtP = generatorP <|> qualifierP
+>         where
+>           generatorP = (\p _ e -> Generator p e) <$> patternP
+>                                                  <*> symbol "<-"
+>                                                  <*> exprP
+>           qualifierP = Qualifier <$> exprP
   
-Building a haskell lexer
-
-> charP :: Parser Literal
-> charP = LitChar <$> charLiteral
-
-> stringP :: Parser Literal
-> stringP = LitString <$> stringLiteral           
-
-> numberP :: Parser Literal
-> numberP = (f <$> naturalOrFloat) <|> (g <$> (symbol "-" *> integer))
->           where
->             f = either (LitInt . fromInteger) (LitFloat . double2Float)
->             g = (LitInt . fromInteger . negate)
-                 
-> nameP :: Parser Name
-> nameP = Name <$> identifier          
-
-> identifier :: Parser String
-> identifier = Tk.identifier lexer
-
-> integer :: Parser Integer
-> integer = Tk.integer lexer
-
-> semi :: Parser ()
-> semi = () <$ Tk.semi lexer        
-
-> braces :: Parser a -> Parser a
-> braces = Tk.braces lexer
-  
-> naturalOrFloat :: Parser (Either Integer Double)
-> naturalOrFloat = Tk.naturalOrFloat lexer
-
-> charLiteral :: Parser Char
-> charLiteral = Tk.charLiteral lexer
-
-> stringLiteral :: Parser String
-> stringLiteral = Tk.stringLiteral lexer
-  
-> symbol :: String -> Parser String
-> symbol = Tk.symbol lexer
-
-> reserved :: String -> Parser ()
-> reserved = Tk.reserved lexer 
-  
-> lexer :: Tk.GenTokenParser String st (State SourcePos)  
-> lexer = Tk.makeTokenParser haskellDef         
-  
-> haskellDef :: Tk.GenLanguageDef String st (State SourcePos)
-> haskellDef = Tk.LanguageDef {
->                 Tk.commentStart   = "{-"
->               , Tk.commentEnd     = "-}"
->               , Tk.commentLine    = "--"
->               , Tk.nestedComments = True
->               , Tk.identStart     = letter
->               , Tk.identLetter = alphaNum <|> oneOf "_'"
->               , Tk.opStart	 = oneOf ":!#$%&*+./<=>?@\\^|-~"
->               , Tk.opLetter	 = oneOf ":!#$%&*+./<=>?@\\^|-~"
->               , Tk.reservedOpNames= []
->               , Tk.reservedNames  = []
->               , Tk.caseSensitive  = True                
->              }              
-
-

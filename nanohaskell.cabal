@@ -17,6 +17,7 @@ library
   hs-source-dirs:      src
   exposed-modules:       
                          Parser.NanoHaskellParser
+                       , Parser.CoreParser
                        , Syntax.NanoHaskell
                        , Syntax.Type  
                        , Syntax.Name
