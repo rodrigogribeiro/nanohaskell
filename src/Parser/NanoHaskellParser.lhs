@@ -3,25 +3,23 @@ Simple parser for NanoHaskell
 
 > module Parser.NanoHaskellParser where
 
-> import Data.Char          
-> import Data.Functor
-> import Data.Functor.Identity     
+> import Control.Monad.State
+  
+> import Data.Char           
 
 > import GHC.Float
-        
-> import Text.Parsec
-> import Text.Parsec.Expr
-> import Text.Parsec.Language    
-> import qualified Text.Parsec.Token as Tk
 
-> import Parser.LayoutCombinators
+> import Text.Parsec hiding (State)
+> import Text.Parsec.Indent
+> import Text.Parsec.Pos (SourcePos)    
+> import qualified Text.Parsec.Token as Tk
   
 > import Syntax.Name
 > import Syntax.NanoHaskell
   
 A type for parsers
    
-> type Parser a = IParsec a
+> type Parser a = ParsecT String () (State SourcePos) a
 
 
 > exprP :: Parser Expr
@@ -47,12 +45,8 @@ A type for parsers
 > lbindP = Local <$> nameP <*> (symbol "=" *> exprP)
            
 > letP :: Parser Expr            
-> letP = f <$> reserved "let" <*> maybeBraces lbindP
->                             <*> reserved "in" <*> exprP
->        where
->           bindP = (,) <$> nameP <*> (symbol "=" *> exprP)
->           f _ lb _ e = ELet lb e
-
+> letP = undefined
+>        
 > ifP :: Parser Expr            
 > ifP = f <$> reserved "if" <*> exprP <*> reserved "then"
 >                           <*> exprP <*> reserved "else"
@@ -61,10 +55,7 @@ A type for parsers
 >         f _ e _ e' _ e'' = EIf e e' e''
 
 > caseP :: Parser Expr          
-> caseP = f <$> reserved "case" <*> exprP <*> reserved "of"
->                               <*> maybeBraces (matchP "->")
->         where
->           f _ e _ ms = ECase e ms
+> caseP = undefined
 
 > matchP :: String -> Parser Match
 > matchP sep = f <$> many1 patternP <*> symbol sep <*> exprP
@@ -90,11 +81,6 @@ A type for parsers
 > literalP :: Parser Literal
 > literalP = choice [numberP , charP , stringP]
 
-> block :: Parser a -> Parser [a]
-> block p = laidout (many (align >> p))         
-
-> maybeBraces :: Parser a -> Parser [a]
-> maybeBraces p = braces (endBy p semi) <|> block p
   
 Building a haskell lexer
 
@@ -140,7 +126,22 @@ Building a haskell lexer
 > reserved :: String -> Parser ()
 > reserved = Tk.reserved lexer 
   
-> lexer :: Tk.TokenParser st
+> lexer :: Tk.GenTokenParser String st (State SourcePos)  
 > lexer = Tk.makeTokenParser haskellDef         
-
   
+> haskellDef :: Tk.GenLanguageDef String st (State SourcePos)
+> haskellDef = Tk.LanguageDef {
+>                 Tk.commentStart   = "{-"
+>               , Tk.commentEnd     = "-}"
+>               , Tk.commentLine    = "--"
+>               , Tk.nestedComments = True
+>               , Tk.identStart     = letter
+>               , Tk.identLetter = alphaNum <|> oneOf "_'"
+>               , Tk.opStart	 = oneOf ":!#$%&*+./<=>?@\\^|-~"
+>               , Tk.opLetter	 = oneOf ":!#$%&*+./<=>?@\\^|-~"
+>               , Tk.reservedOpNames= []
+>               , Tk.reservedNames  = []
+>               , Tk.caseSensitive  = True                
+>              }              
+
+
