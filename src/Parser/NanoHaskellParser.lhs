@@ -46,7 +46,7 @@ Expressions
 > lbindP = Local <$> nameP <*> (symbol "=" *> exprP)
            
 > letP :: Parser Expr            
-> letP = undefined
+> letP = fail "" 
 >        
 > ifP :: Parser Expr            
 > ifP = f <$> reserved "if" <*> exprP <*> reserved "then"

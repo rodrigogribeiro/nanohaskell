@@ -31,7 +31,7 @@ A type class for pretty printting stuff
 >     pprint (EVar n) = pprint n
 >     pprint (ECon n) = pprint n
 >     pprint (ELit l) = pprint l
->     pprint (ELam n e) = hcat [slash, pprint n, larrow, pprint e]
+>     pprint (ELam n e) = hsep [slash, pprint n, larrow, pprint e]
 >     pprint (EApp l r) = pprint l <+> pprint r
 >     pprint (ELet lb e') = llet <> nl <> nest 3 (pLines lb)
 >                                <> nl <> lin <> pprint e'

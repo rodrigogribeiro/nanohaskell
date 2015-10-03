@@ -55,10 +55,6 @@ Building a haskell lexer
 > naturalOrFloat = Tk.naturalOrFloat lexer
 
 > charLiteral :: Parser Char
-
-
-
-  
 > charLiteral = Tk.charLiteral lexer
 
 > stringLiteral :: Parser String

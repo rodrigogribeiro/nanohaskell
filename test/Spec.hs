@@ -33,16 +33,16 @@ parserPrettyTests = testGroup "Parser and Pretty Printer Tests"
                                                                  ]
                                                      ]
                               , testGroup "Expressions" [ testCase "Var:" $ genSyntaxPrettyTest (EVar (Name "xs")) atomP
-                                                        , testCase "Con:" $ genSyntaxPrettyTest (ECon (Name "Cons")) atomP
-                                                        , testCase "Lit:" $ genSyntaxPrettyTest (ELit (LitFloat (3.14))) atomP
-                                                        , testCase "Lam:" $ genSyntaxPrettyTest (ELam (Name "x") (EVar (Name "x"))) exprP 
+                                                        , testCase "Con:" $ genSyntaxPrettyTest (ECon (Name "Cons")) atomP                                                        
+                                                        , testCase "Lam:" $ genSyntaxPrettyTest (ELam (Name "x") (EVar (Name "x"))) lamP
+                                                        , testCase "Lit:" $ genSyntaxPrettyTest (ELit (LitFloat (3.14))) atomP                                                          
                                                         ]
                               ]
 
 
 genSyntaxPrettyTest :: (Show a, Eq a, PPrint a) => a -> Parser a -> Assertion
 genSyntaxPrettyTest x px = case runIndent "" $ P.runParserT px () "" (render $ pprint x) of
-                               Left e -> undefined
+                               Left e -> print e
                                Right x' -> x @=? x'
 
 
