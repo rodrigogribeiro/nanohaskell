@@ -22,23 +22,28 @@ Simple parser for NanoHaskell
 
 
 Expressions
-  
+
 > exprP :: Parser Expr
-> exprP = chainl1 atomP (return EApp) 
+> exprP = flip ($) <$> appP <*> option id annP
+>         where
+>           annP = flip EAnn <$> (reservedOp "::" *> typeP)
+        
+> appP :: Parser Expr
+> appP = foldl1 EApp <$> many1 atomP
 
 > atomP :: Parser Expr
-> atomP = choice [ varOrConP
->                , ELit <$> literalP
->                , lamP
+> atomP = choice [ ELit <$> literalP
+>                , lamP 
 >                , letP  
 >                , ifP
 >                , caseP
->                , annP
 >                , doP
+>                , parens exprP
+>                , varOrConP  
 >                , failP ]  
 
 > lamP :: Parser Expr
-> lamP = f <$> symbol "\\" <*> nameP <*> symbol "->" <*> exprP
+> lamP = f <$> reservedOp "\\" <*> nameP <*> reservedOp "->" <*> exprP
 >        where
 >          f _ n _ e = ELam n e
 
@@ -46,7 +51,10 @@ Expressions
 > lbindP = Local <$> nameP <*> (symbol "=" *> exprP)
            
 > letP :: Parser Expr            
-> letP = fail "" 
+> letP = f <$> reserved "let" <*> block lbindP <*> reserved "in"
+>                             <*> exprP
+>        where
+>          f _ bs _ e = ELet bs e
 >        
 > ifP :: Parser Expr            
 > ifP = f <$> reserved "if" <*> exprP <*> reserved "then"
@@ -77,9 +85,6 @@ Expressions
 >               f xss@(x:xs) ps
 >                   | isUpper x = PCon (Name xss) ps
 >                   | otherwise = PVar (Name xss)
-
-> annP :: Parser Expr                                                  
-> annP = EAnn <$> exprP <* symbol "::" *> typeP
 
 > doP :: Parser Expr  
 > doP = EDo <$> (reserved "do" *> block stmtP)

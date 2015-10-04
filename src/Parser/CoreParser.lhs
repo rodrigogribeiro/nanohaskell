@@ -65,6 +65,12 @@ Building a haskell lexer
 
 > reserved :: String -> Parser ()
 > reserved = Tk.reserved lexer 
+
+> reservedOp :: String -> Parser ()
+> reservedOp = Tk.reservedOp lexer
+
+> parens :: Parser a -> Parser a
+> parens = Tk.parens lexer
   
 > lexer :: Tk.GenTokenParser String st (State SourcePos)  
 > lexer = Tk.makeTokenParser haskellDef         
